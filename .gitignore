@@ -1,0 +1,42 @@
+# Frontend (Node / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Backend (Java / Gradle)
+backend/build/
+backend/.gradle/
+backend/out/
+*.class
+*.jar
+*.war
+*.log
+backend/*.iml
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Optional (Claude/Cursor local settings)
+.claude/settings.local.json
