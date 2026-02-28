@@ -57,7 +57,7 @@ cmd_up() {
   log_ok "All services are running!"
   echo ""
   echo "  PostgreSQL : localhost:5432"
-  echo "  Tech-board : http://localhost:8080"
+  echo "  Backend    : http://localhost:8080"
   echo "  Frontend   : http://localhost:80"
   echo ""
 }
@@ -106,7 +106,7 @@ wait_for_healthy() {
   while [ $retries -gt 0 ]; do
     local all_healthy=true
 
-    for service in postgres tech-board frontend; do
+    for service in postgres backend frontend; do
       local health
       health=$(docker compose -f "$COMPOSE_FILE" ps "$service" --format '{{.Health}}' 2>/dev/null || echo "unknown")
       if [ "$health" != "healthy" ]; then
@@ -136,12 +136,12 @@ usage() {
   echo "  down                Stop all services"
   echo "  restart             Restart all services"
   echo "  status              Show service status"
-  echo "  logs [service]      Tail service logs (postgres|tech-board|frontend)"
+  echo "  logs [service]      Tail service logs (postgres|backend|frontend)"
   echo "  clean               Stop services and remove volumes (destructive)"
   echo ""
   echo "Examples:"
   echo "  $0 up --build       Build and start fresh"
-  echo "  $0 logs tech-board  Follow tech-board logs"
+  echo "  $0 logs backend     Follow backend logs"
   echo "  $0 status           Check running services"
   echo ""
 }
