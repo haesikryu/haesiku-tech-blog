@@ -10,15 +10,15 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/pnpm-debug.log*
 
-# Backend (Java / Gradle)
-backend/build/
-backend/.gradle/
-backend/out/
+# Backend - MSA services (Java / Gradle)
+backend/*/build/
+backend/*/.gradle/
+backend/*/out/
 *.class
 *.jar
 *.war
 *.log
-backend/*.iml
+backend/*/*.iml
 
 # IDE
 .idea/

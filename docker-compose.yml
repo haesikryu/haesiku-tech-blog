@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
     networks:
       - blog-network
     healthcheck:
@@ -20,9 +21,9 @@ services:
       retries: 5
       start_period: 30s
 
-  backend:
-    build: ./backend
-    container_name: haesiku-blog-backend
+  tech-board:
+    build: ./backend/tech-board
+    container_name: haesiku-blog-tech-board
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -43,6 +44,31 @@ services:
       retries: 5
       start_period: 60s
 
+  review-board:
+    build: ./backend/review-board
+    container_name: haesiku-blog-review-board
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/haesiku_review
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # 국립중앙도서관 Open API 인증키 (선택). 설정 시 ISBN 조회 1순위 사용.
+      NL_CERT_KEY: ${NL_CERT_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - blog-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
   frontend:
     build: ./frontend
     container_name: haesiku-blog-frontend
@@ -50,7 +76,7 @@ services:
     ports:
       - "80:80"
     depends_on:
-      backend:
+      tech-board:
         condition: service_healthy
     networks:
       - blog-network

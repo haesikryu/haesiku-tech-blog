@@ -7,7 +7,7 @@ set -euo pipefail
 # ============================================================
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BACKEND_DIR="$ROOT_DIR/backend"
+BACKEND_DIR="$ROOT_DIR/backend/tech-board"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 # --- Colors ---

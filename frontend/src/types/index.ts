@@ -66,6 +66,39 @@ export interface User {
 // --- UI ---
 export type Theme = 'light' | 'dark';
 
+// --- Review (review-board) ---
+export type ReviewType = 'BOOK' | 'COURSE';
+
+export interface ReviewResponse {
+  id: number;
+  reviewType: ReviewType;
+  title: string;
+  content: string;
+  rating: number;
+  itemTitle: string;
+  itemAuthor: string | null;
+  itemLink: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewRequest {
+  reviewType: ReviewType;
+  title: string;
+  content: string;
+  rating: number;
+  itemTitle: string;
+  itemAuthor?: string;
+  itemLink?: string;
+}
+
+/** ISBN으로 조회한 책 기본 정보 */
+export interface BookInfo {
+  title: string;
+  author: string | null;
+  link: string | null;
+}
+
 // --- Error ---
 export interface ErrorResponse {
   status: number;

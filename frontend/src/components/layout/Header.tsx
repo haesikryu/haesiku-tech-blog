@@ -31,6 +31,9 @@ export default function Header() {
           <Link to="/posts" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
             게시글
           </Link>
+          <Link to="/reviews" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
+            후기
+          </Link>
           {isAuthenticated && (
             <Link to="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
               관리자

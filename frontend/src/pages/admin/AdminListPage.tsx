@@ -25,8 +25,13 @@ export default function AdminListPage() {
     <>
       <Seo title="관리자" />
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">게시글 관리</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">게시글 관리</h1>
+          <Link to="/admin/reviews" className="text-sm font-medium text-gray-600 hover:text-blue-600">
+            후기 관리 →
+          </Link>
+        </div>
         <Link to="/admin/posts/new">
           <Button>새 게시글 작성</Button>
         </Link>

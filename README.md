@@ -377,6 +377,12 @@ npm run dev
 | `SPRING_JPA_HIBERNATE_DDL_AUTO` | `update` | DDL 전략 |
 | `SERVER_PORT` | `8080` | 서버 포트 |
 
+### review-board (후기 서비스, ISBN 조회)
+
+| 변수 | 기본값 | 설명 |
+|------|--------|------|
+| `NL_CERT_KEY` | *(없음)* | 국립중앙도서관 Open API 인증키. 설정 시 ISBN 책 조회 시 1순위로 사용. [인증키 신청](https://www.nl.go.kr) → 회원가입 → 신청참여 → 연계API → 인증키 신청/관리 |
+
 ### Frontend (개발 모드)
 
 | 변수 | 기본값 | 설명 |
