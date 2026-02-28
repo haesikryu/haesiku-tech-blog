@@ -26,6 +26,7 @@ export default function PostCard({ post }: PostCardProps) {
         <PostMeta
           createdAt={post.createdAt}
           viewCount={post.viewCount}
+          commentCount={post.commentCount}
           category={post.category}
           tags={post.tags}
         />

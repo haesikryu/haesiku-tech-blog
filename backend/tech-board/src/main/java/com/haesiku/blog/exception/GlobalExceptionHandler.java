@@ -18,6 +18,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidPassword(InvalidPasswordException e) {
+        ErrorResponseDto error = new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseDto> handleIllegalArgument(IllegalArgumentException e) {
         ErrorResponseDto error = new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), e.getMessage());

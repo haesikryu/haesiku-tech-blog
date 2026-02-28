@@ -1,12 +1,53 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAuthStore, useUiStore } from '@/store';
+
+const PATH_LABELS: Record<string, string> = {
+  '/': 'Home',
+  '/posts': 'BLOG',
+  '/reviews': 'BOOK REVIEW',
+  '/search': 'Search',
+  '/about': 'About',
+  '/admin': '관리자',
+};
+
+function getBreadcrumbLabel(pathname: string, customTitle: string | null): string {
+  if (customTitle) return customTitle;
+  if (pathname === '/') return 'Home';
+  if (pathname.startsWith('/posts/')) return pathname === '/posts' ? 'BLOG' : 'BLOG';
+  if (pathname.startsWith('/categories/')) return 'CATEGORIES';
+  if (pathname.startsWith('/tags/')) return 'TAGS';
+  return PATH_LABELS[pathname] ?? (pathname.slice(1) || 'Home');
+}
+
+function getBreadcrumbPath(pathname: string, customTitle: string | null): { href: string; label: string }[] {
+  const label = getBreadcrumbLabel(pathname, customTitle);
+  if (pathname === '/' || pathname === '') return [{ href: '/', label: 'Home' }];
+  const segments = pathname.split('/').filter(Boolean);
+  const items: { href: string; label: string }[] = [{ href: '/', label: 'Home' }];
+  let acc = '';
+  for (let i = 0; i < segments.length; i++) {
+    acc += '/' + segments[i];
+    const isLast = i === segments.length - 1;
+    items.push({
+      href: acc,
+      label: isLast ? label : (PATH_LABELS[acc] ?? segments[i]),
+    });
+  }
+  return items;
+}
 
 export default function Header() {
   const [keyword, setKeyword] = useState('');
+  const location = useLocation();
   const navigate = useNavigate();
+  const { title: customTitle } = useBreadcrumb();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { theme, toggleTheme } = useUiStore();
+
+  const breadcrumbs = getBreadcrumbPath(location.pathname, customTitle);
+  const displayLabel = getBreadcrumbLabel(location.pathname, customTitle);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -18,44 +59,49 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/80">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <Link to="/" className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors dark:text-white">
-          Haesiku Tech Blog
-        </Link>
-
-        <nav aria-label="메인 네비게이션" className="hidden items-center gap-6 md:flex">
-          <Link to="/" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
-            홈
-          </Link>
-          <Link to="/posts" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
-            게시글
-          </Link>
-          <Link to="/reviews" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
-            후기
-          </Link>
-          {isAuthenticated && (
-            <Link to="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors dark:text-gray-300">
-              관리자
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
+      <div className="flex items-center justify-between gap-4 px-4 py-3">
+        {/* 브레드크럼 */}
+        <nav aria-label="브레드크럼" className="flex min-w-0 items-center text-sm">
+          {breadcrumbs.length <= 1 ? (
+            <Link to="/" className="font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">
+              Home
             </Link>
+          ) : (
+            <>
+              <Link to="/" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">
+                Home
+              </Link>
+              {breadcrumbs.slice(1).map((b, i) => (
+                <span key={b.href} className="flex items-center gap-1">
+                  <span className="mx-1.5 text-gray-400">&gt;</span>
+                  {i === breadcrumbs.length - 2 ? (
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {displayLabel}
+                    </span>
+                  ) : (
+                    <Link to={b.href} className="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                      {b.label}
+                    </Link>
+                  )}
+                </span>
+              ))}
+            </>
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
-          {/* 검색 */}
-          <form onSubmit={handleSearch} role="search" className="hidden md:block">
-            <label htmlFor="search-input" className="sr-only">블로그 검색</label>
+        {/* 검색 */}
+        <div className="flex shrink-0 items-center gap-2">
+          <form onSubmit={handleSearch} role="search" className="flex">
+            <label htmlFor="search-input" className="sr-only">검색</label>
             <div className="relative">
               <input
                 id="search-input"
                 type="search"
-                placeholder="검색..."
+                placeholder="Search..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-40 rounded-lg border border-gray-300 bg-gray-50 px-3 py-1.5 pr-9 text-sm
-                  placeholder-gray-400 transition-colors focus:border-blue-500 focus:bg-white
-                  focus:outline-none focus:ring-1 focus:ring-blue-500 lg:w-56
-                  dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:bg-gray-700"
+                className="w-36 rounded-lg border border-gray-300 bg-gray-50 py-1.5 pl-3 pr-8 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 sm:w-44"
               />
               <button
                 type="submit"
@@ -70,11 +116,10 @@ export default function Header() {
             </div>
           </form>
 
-          {/* 테마 토글 */}
           <button
             onClick={toggleTheme}
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-            aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
+            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
           >
             {theme === 'light' ? (
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,13 +134,12 @@ export default function Header() {
             )}
           </button>
 
-          {/* 유저 정보 / 로그아웃 */}
           {isAuthenticated && user && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">{user.username}</span>
               <button
                 onClick={logout}
-                className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600 dark:text-gray-400 dark:hover:bg-gray-800"
+                className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-800"
               >
                 로그아웃
               </button>

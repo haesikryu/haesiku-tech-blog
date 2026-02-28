@@ -8,7 +8,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class, TagMapper.class})
 public interface PostMapper {
 
-    @Mapping(source = "category", target = "category")
-    @Mapping(source = "tags", target = "tags")
-    PostResponseDto toResponseDto(Post post);
+    @Mapping(source = "post.category", target = "category")
+    @Mapping(source = "post.tags", target = "tags")
+    @Mapping(target = "commentCount", expression = "java(commentCount)")
+    PostResponseDto toResponseDto(Post post, long commentCount);
 }

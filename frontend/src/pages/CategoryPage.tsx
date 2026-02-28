@@ -13,8 +13,9 @@ export default function CategoryPage() {
     <>
       <Seo title={`카테고리: ${slug}`} description={`${slug} 카테고리의 게시글 목록`} />
 
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">
-        카테고리: <span className="text-blue-600">{slug}</span>
+      <div className="mx-auto max-w-3xl">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+        카테고리: <span className="text-blue-600 dark:text-blue-400">{slug}</span>
       </h1>
 
       {isLoading && <Loading />}
@@ -37,6 +38,7 @@ export default function CategoryPage() {
           </div>
         </>
       )}
+      </div>
     </>
   );
 }

@@ -14,8 +14,9 @@ export default function SearchPage() {
     <>
       <Seo title={`검색: ${keyword}`} description={`"${keyword}" 검색 결과`} />
 
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">
-        검색: <span className="text-blue-600">&ldquo;{keyword}&rdquo;</span>
+      <div className="mx-auto max-w-3xl">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+        검색: <span className="text-blue-600 dark:text-blue-400">&ldquo;{keyword}&rdquo;</span>
       </h1>
 
       {!keyword && (
@@ -46,6 +47,7 @@ export default function SearchPage() {
           </div>
         </>
       )}
+      </div>
     </>
   );
 }

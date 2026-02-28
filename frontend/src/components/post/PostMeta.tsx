@@ -5,6 +5,7 @@ import type { CategoryResponse, TagResponse } from '@/types';
 interface PostMetaProps {
   createdAt: string;
   viewCount?: number;
+  commentCount?: number;
   category?: CategoryResponse;
   tags?: TagResponse[];
 }
@@ -18,7 +19,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function PostMeta({ createdAt, viewCount, category, tags }: PostMetaProps) {
+export default function PostMeta({ createdAt, viewCount, commentCount, category, tags }: PostMetaProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
       <time dateTime={createdAt}>{formatDate(createdAt)}</time>
@@ -27,6 +28,13 @@ export default function PostMeta({ createdAt, viewCount, category, tags }: PostM
         <>
           <span aria-hidden="true">&middot;</span>
           <span>조회 {viewCount.toLocaleString()}</span>
+        </>
+      )}
+
+      {commentCount !== undefined && (
+        <>
+          <span aria-hidden="true">&middot;</span>
+          <span>댓글 {commentCount}</span>
         </>
       )}
 

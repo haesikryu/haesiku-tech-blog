@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { usePublishedPosts, useCategories, useTags } from '@/hooks';
+import { usePublishedPosts } from '@/hooks';
 import { PostCard } from '@/components/post';
-import { Sidebar } from '@/components/layout';
 import { Pagination, Loading, ErrorMessage, Seo } from '@/components/common';
 
 export default function HomePage() {
   const [page, setPage] = useState(0);
   const { data, isLoading, isError, refetch } = usePublishedPosts(page);
-  const { data: categories = [] } = useCategories();
-  const { data: tags = [] } = useTags();
 
   return (
     <>
       <Seo description="개발과 기술에 대한 이야기를 나누는 블로그입니다." />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px]">
-        <section>
-          <h1 className="mb-6 text-2xl font-bold text-gray-900">최신 게시글</h1>
+      <div className="mx-auto max-w-3xl">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">최신 게시글</h1>
 
           {isLoading && <Loading />}
           {isError && <ErrorMessage message="게시글을 불러오지 못했습니다." onRetry={refetch} />}
@@ -42,12 +38,7 @@ export default function HomePage() {
               </div>
             </>
           )}
-        </section>
-
-        <aside className="hidden lg:block">
-          <Sidebar categories={categories} tags={tags} />
-        </aside>
-      </div>
+        </div>
     </>
   );
 }

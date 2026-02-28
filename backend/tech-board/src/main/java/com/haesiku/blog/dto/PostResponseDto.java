@@ -32,6 +32,9 @@ public record PostResponseDto(
         @Schema(description = "조회수", example = "42")
         Long viewCount,
 
+        @Schema(description = "댓글 수", example = "3")
+        Long commentCount,
+
         @Schema(description = "소속 카테고리")
         CategoryResponseDto category,
 

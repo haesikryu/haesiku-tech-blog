@@ -26,6 +26,7 @@ export interface PostResponse {
   slug: string;
   status: PostStatus;
   viewCount: number;
+  commentCount?: number;
   category: CategoryResponse;
   tags: TagResponse[];
   createdAt: string;
@@ -97,6 +98,26 @@ export interface BookInfo {
   title: string;
   author: string | null;
   link: string | null;
+}
+
+// --- Comment ---
+export interface CommentResponse {
+  id: number;
+  author: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentCreateRequest {
+  author: string;
+  password: string;
+  body: string;
+}
+
+export interface CommentUpdateRequest {
+  password: string;
+  body: string;
 }
 
 // --- Error ---

@@ -67,8 +67,9 @@ export default function ReviewListPage() {
         description="책과 강의 후기를 정리한 목록입니다."
       />
 
+      <div className="mx-auto max-w-3xl">
       <div className="mb-6">
-        <h1 className="mb-4 text-2xl font-bold text-gray-900">후기</h1>
+        <h1 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">후기</h1>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
@@ -138,6 +139,7 @@ export default function ReviewListPage() {
           </div>
         </>
       )}
+      </div>
     </>
   );
 }

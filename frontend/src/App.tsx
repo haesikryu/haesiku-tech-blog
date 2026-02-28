@@ -15,6 +15,7 @@ const AdminListPage = lazy(() => import('@/pages/admin/AdminListPage'));
 const PostFormPage = lazy(() => import('@/pages/admin/PostFormPage'));
 const AdminReviewListPage = lazy(() => import('@/pages/admin/AdminReviewListPage'));
 const ReviewFormPage = lazy(() => import('@/pages/admin/ReviewFormPage'));
+const AboutPage = lazy(() => import('@/pages/AboutPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/reviews" element={<ReviewListPage />} />
             <Route path="/reviews/:id" element={<ReviewDetailPage />} />
+            <Route path="/about" element={<AboutPage />} />
 
             {/* Admin (Protected) */}
             <Route path="/admin" element={<ProtectedRoute><AdminListPage /></ProtectedRoute>} />

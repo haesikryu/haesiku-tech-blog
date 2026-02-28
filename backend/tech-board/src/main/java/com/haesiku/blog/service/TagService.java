@@ -6,6 +6,8 @@ import com.haesiku.blog.entity.Tag;
 import com.haesiku.blog.exception.EntityNotFoundException;
 import com.haesiku.blog.mapper.PostMapper;
 import com.haesiku.blog.mapper.TagMapper;
+import com.haesiku.blog.entity.Post;
+import com.haesiku.blog.repository.CommentRepository;
 import com.haesiku.blog.repository.PostRepository;
 import com.haesiku.blog.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class TagService {
 
     private final TagRepository tagRepository;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final TagMapper tagMapper;
     private final PostMapper postMapper;
 
@@ -71,7 +74,13 @@ public class TagService {
         Tag tag = tagRepository.findBySlug(slug)
                 .orElseThrow(() -> new EntityNotFoundException("Tag", "slug", slug));
 
-        return postRepository.findByTagId(tag.getId(), pageable)
-                .map(postMapper::toResponseDto);
+        Page<Post> page = postRepository.findByTagId(tag.getId(), pageable);
+        List<Post> content = page.getContent();
+        if (content.isEmpty()) {
+            return page.map(post -> postMapper.toResponseDto(post, 0L));
+        }
+        Map<Long, Long> countMap = commentRepository.countByPostIds(content.stream().map(Post::getId).toList()).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Number) row[1]).longValue()));
+        return page.map(post -> postMapper.toResponseDto(post, countMap.getOrDefault(post.getId(), 0L)));
     }
 }

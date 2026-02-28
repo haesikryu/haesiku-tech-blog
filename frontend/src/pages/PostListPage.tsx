@@ -24,8 +24,9 @@ export default function PostListPage() {
     <>
       <Seo title="전체 게시글" description="전체 게시글 목록입니다." />
 
+      <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">전체 게시글</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">전체 게시글</h1>
 
         <div className="flex gap-2">
           {SORT_OPTIONS.map((opt) => (
@@ -68,6 +69,7 @@ export default function PostListPage() {
           </div>
         </>
       )}
+      </div>
     </>
   );
 }

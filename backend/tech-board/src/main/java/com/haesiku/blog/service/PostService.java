@@ -9,6 +9,7 @@ import com.haesiku.blog.entity.Tag;
 import com.haesiku.blog.exception.EntityNotFoundException;
 import com.haesiku.blog.mapper.PostMapper;
 import com.haesiku.blog.repository.CategoryRepository;
+import com.haesiku.blog.repository.CommentRepository;
 import com.haesiku.blog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
+    private final CommentRepository commentRepository;
     private final TagService tagService;
     private final PostMapper postMapper;
 
@@ -42,7 +46,8 @@ public class PostService {
 
         applyTags(post, request.tagNames());
 
-        return postMapper.toResponseDto(postRepository.save(post));
+        Post saved = postRepository.save(post);
+        return postMapper.toResponseDto(saved, 0L);
     }
 
     @Transactional
@@ -55,7 +60,8 @@ public class PostService {
         post.clearTags();
         applyTags(post, request.tagNames());
 
-        return postMapper.toResponseDto(post);
+        long commentCount = commentRepository.countByPostId(post.getId());
+        return postMapper.toResponseDto(post, commentCount);
     }
 
     @Transactional
@@ -71,34 +77,50 @@ public class PostService {
 
         post.incrementViewCount();
 
-        return postMapper.toResponseDto(post);
+        long commentCount = commentRepository.countByPostId(post.getId());
+        return postMapper.toResponseDto(post, commentCount);
     }
 
     public PostResponseDto getPostById(Long id) {
         Post post = findPostById(id);
-        return postMapper.toResponseDto(post);
+        long commentCount = commentRepository.countByPostId(post.getId());
+        return postMapper.toResponseDto(post, commentCount);
     }
 
     public Page<PostResponseDto> getAllPosts(Pageable pageable) {
-        return postRepository.findAll(pageable)
-                .map(postMapper::toResponseDto);
+        Page<Post> page = postRepository.findAll(pageable);
+        Map<Long, Long> countMap = getCommentCountMap(page.getContent());
+        return page.map(post -> postMapper.toResponseDto(post, countMap.getOrDefault(post.getId(), 0L)));
     }
 
     public Page<PostResponseDto> getPublishedPosts(Pageable pageable) {
-        return postRepository.findByStatusOrderByCreatedAtDesc(PostStatus.PUBLISHED, pageable)
-                .map(postMapper::toResponseDto);
+        Page<Post> page = postRepository.findByStatusOrderByCreatedAtDesc(PostStatus.PUBLISHED, pageable);
+        Map<Long, Long> countMap = getCommentCountMap(page.getContent());
+        return page.map(post -> postMapper.toResponseDto(post, countMap.getOrDefault(post.getId(), 0L)));
     }
 
     public Page<PostResponseDto> searchPosts(String keyword, Pageable pageable) {
-        return postRepository.findByTitleContainingOrderByCreatedAtDesc(keyword, pageable)
-                .map(postMapper::toResponseDto);
+        Page<Post> page = postRepository.findByTitleContainingOrderByCreatedAtDesc(keyword, pageable);
+        Map<Long, Long> countMap = getCommentCountMap(page.getContent());
+        return page.map(post -> postMapper.toResponseDto(post, countMap.getOrDefault(post.getId(), 0L)));
     }
 
     @Transactional
     public PostResponseDto publishPost(Long id) {
         Post post = findPostById(id);
         post.publish();
-        return postMapper.toResponseDto(post);
+        long commentCount = commentRepository.countByPostId(post.getId());
+        return postMapper.toResponseDto(post, commentCount);
+    }
+
+    private Map<Long, Long> getCommentCountMap(List<Post> posts) {
+        if (posts.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+        List<Object[]> rows = commentRepository.countByPostIds(postIds);
+        return rows.stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Number) row[1]).longValue()));
     }
 
     private Post findPostById(Long id) {

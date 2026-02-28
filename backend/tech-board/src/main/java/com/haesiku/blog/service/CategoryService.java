@@ -4,10 +4,12 @@ import com.haesiku.blog.dto.CategoryRequestDto;
 import com.haesiku.blog.dto.CategoryResponseDto;
 import com.haesiku.blog.dto.PostResponseDto;
 import com.haesiku.blog.entity.Category;
+import com.haesiku.blog.entity.Post;
 import com.haesiku.blog.exception.EntityNotFoundException;
 import com.haesiku.blog.mapper.CategoryMapper;
 import com.haesiku.blog.mapper.PostMapper;
 import com.haesiku.blog.repository.CategoryRepository;
+import com.haesiku.blog.repository.CommentRepository;
 import com.haesiku.blog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final CategoryMapper categoryMapper;
     private final PostMapper postMapper;
 
@@ -51,7 +56,13 @@ public class CategoryService {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new EntityNotFoundException("Category", "slug", slug));
 
-        return postRepository.findByCategoryIdOrderByCreatedAtDesc(category.getId(), pageable)
-                .map(postMapper::toResponseDto);
+        Page<Post> page = postRepository.findByCategoryIdOrderByCreatedAtDesc(category.getId(), pageable);
+        List<Post> content = page.getContent();
+        if (content.isEmpty()) {
+            return page.map(post -> postMapper.toResponseDto(post, 0L));
+        }
+        Map<Long, Long> countMap = commentRepository.countByPostIds(content.stream().map(Post::getId).toList()).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Number) row[1]).longValue()));
+        return page.map(post -> postMapper.toResponseDto(post, countMap.getOrDefault(post.getId(), 0L)));
     }
 }
