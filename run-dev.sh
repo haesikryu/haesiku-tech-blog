@@ -7,7 +7,7 @@ set -euo pipefail
 # ============================================================
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BACKEND_DIR="$ROOT_DIR/backend/tech-board"
+BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 DB_CONTAINER="haesiku-blog-dev-db"
@@ -28,9 +28,10 @@ log_ok()    { echo -e "${GREEN}[OK]${NC}    $*"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
-# PID tracking for cleanup
+# PID / container tracking for cleanup
 BACKEND_PID=""
 FRONTEND_PID=""
+BACKEND_CONTAINER_NAME="haesiku-blog-dev-backend"
 
 cleanup() {
   echo ""
@@ -46,6 +47,11 @@ cleanup() {
     kill "$BACKEND_PID" 2>/dev/null || true
     wait "$BACKEND_PID" 2>/dev/null || true
     log_ok "Backend stopped."
+  fi
+
+  if docker ps --format '{{.Names}}' | grep -q "^${BACKEND_CONTAINER_NAME}$"; then
+    docker stop "$BACKEND_CONTAINER_NAME" &>/dev/null || true
+    log_ok "Backend (Docker) stopped."
   fi
 
   log_info "PostgreSQL container ($DB_CONTAINER) is still running."
@@ -119,20 +125,30 @@ start_postgres() {
 # --- Backend ---
 start_backend() {
   log_info "Starting Backend (Spring Boot)..."
-  cd "$BACKEND_DIR"
 
-  if [ ! -f "./gradlew" ]; then
-    log_error "Gradle Wrapper not found in $BACKEND_DIR"
-    exit 1
+  if [ -f "$BACKEND_DIR/gradle/wrapper/gradle-wrapper.jar" ] && [ -f "$BACKEND_DIR/gradlew" ]; then
+    cd "$BACKEND_DIR"
+    chmod +x ./gradlew
+    DB_USERNAME="$DB_USER" DB_PASSWORD="$DB_PASS" \
+      ./gradlew bootRun \
+      --args="--spring.datasource.url=jdbc:postgresql://localhost:${DB_PORT}/${DB_NAME}" \
+      &
+    BACKEND_PID=$!
+  else
+    log_warn "Gradle Wrapper (gradle-wrapper.jar) not found. Starting Backend via Docker..."
+    docker rm -f "$BACKEND_CONTAINER_NAME" 2>/dev/null || true
+    if ! docker image inspect haesiku-tech-blog-backend:latest &>/dev/null; then
+      log_info "Building backend image (first time)..."
+      docker build -t haesiku-tech-blog-backend:latest "$ROOT_DIR/backend" || exit 1
+    fi
+    docker run -d --name "$BACKEND_CONTAINER_NAME" \
+      -p 8080:8080 \
+      -e SPRING_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:${DB_PORT}/${DB_NAME}" \
+      -e DB_USERNAME="$DB_USER" \
+      -e DB_PASSWORD="$DB_PASS" \
+      -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+      haesiku-tech-blog-backend:latest || exit 1
   fi
-
-  chmod +x ./gradlew
-
-  DB_USERNAME="$DB_USER" DB_PASSWORD="$DB_PASS" \
-    ./gradlew bootRun \
-    --args="--spring.datasource.url=jdbc:postgresql://localhost:${DB_PORT}/${DB_NAME}" \
-    &
-  BACKEND_PID=$!
 
   # Wait for backend to be ready
   log_info "Waiting for Backend (port 8080)..."
@@ -142,8 +158,13 @@ start_backend() {
       log_ok "Backend ready on http://localhost:8080"
       return 0
     fi
-    if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+    if [ -n "$BACKEND_PID" ] && ! kill -0 "$BACKEND_PID" 2>/dev/null; then
       log_error "Backend process exited unexpectedly."
+      exit 1
+    fi
+    if [ -z "$BACKEND_PID" ] && ! docker ps --format '{{.Names}}' | grep -q "^${BACKEND_CONTAINER_NAME}$"; then
+      log_error "Backend container exited unexpectedly."
+      docker logs "$BACKEND_CONTAINER_NAME" 2>&1 | tail -30
       exit 1
     fi
     retries=$((retries - 1))
@@ -168,7 +189,7 @@ start_frontend() {
 
   sleep 3
   if kill -0 "$FRONTEND_PID" 2>/dev/null; then
-    log_ok "Frontend ready on http://localhost:5173"
+    log_ok "Frontend ready on http://localhost:3000"
   else
     log_error "Frontend failed to start."
     exit 1
@@ -234,7 +255,7 @@ main() {
     echo "  Backend    : http://localhost:8080"
   fi
   if [ "$component" = "all" ] || [ "$component" = "frontend" ]; then
-    echo "  Frontend   : http://localhost:5173"
+    echo "  Frontend   : http://localhost:3000"
   fi
   echo "  Press Ctrl+C to stop"
   echo "================================================"

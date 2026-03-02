@@ -88,7 +88,7 @@ export default function LeftSidebar() {
           </svg>
         </a>
         <a
-          href="https://www.linkedin.com/haesiku/"
+          href="https://www.linkedin.com/in/haesiku/"
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-white"

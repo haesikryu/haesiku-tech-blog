@@ -103,7 +103,8 @@ Markdown 기반 기술 블로그 플랫폼입니다. Spring Boot REST API 백엔
 │              PostgreSQL 15 (Alpine)                   │
 │                                                       │
 │  Database: haesiku_blog                               │
-│  Tables: posts, categories, tags, post_tags           │
+│  Tables: posts, comments, categories, tags,          │
+│          post_tags, reviews                           │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -111,17 +112,24 @@ Markdown 기반 기술 블로그 플랫폼입니다. Spring Boot REST API 백엔
 
 ```
 haesiku-tech-blog/
-├── backend/                      # Spring Boot
-│   ├── src/main/java/com/haesiku/blog/
-│   │   ├── config/               # JPA, OpenAPI 설정
-│   │   ├── controller/           # REST Controller
-│   │   ├── dto/                  # Request/Response DTO (record)
-│   │   ├── entity/               # JPA Entity
-│   │   ├── exception/            # 예외 처리
-│   │   ├── mapper/               # MapStruct Mapper
-│   │   ├── repository/           # JPA Repository
-│   │   ├── service/              # 비즈니스 로직
-│   │   └── util/                 # 유틸리티 (SlugUtils)
+├── backend/                      # Spring Boot (통합 백엔드)
+│   ├── src/main/java/com/haesiku/
+│   │   ├── Application.java      # 메인 클래스
+│   │   ├── common/               # 공통 (config, dto, entity, exception, util)
+│   │   ├── blog/                 # 게시글·카테고리·태그·댓글
+│   │   │   ├── controller/       # REST Controller
+│   │   │   ├── dto/              # Request/Response DTO
+│   │   │   ├── entity/           # JPA Entity
+│   │   │   ├── mapper/           # MapStruct Mapper
+│   │   │   ├── repository/      # JPA Repository
+│   │   │   └── service/         # 비즈니스 로직
+│   │   └── review/              # 책/강의 후기, ISBN 조회
+│   │       ├── controller/      # REST Controller
+│   │       ├── dto/
+│   │       ├── entity/
+│   │       ├── mapper/
+│   │       ├── repository/
+│   │       └── service/
 │   ├── src/main/resources/
 │   │   └── application.yml
 │   ├── build.gradle
@@ -177,7 +185,7 @@ haesiku-tech-blog/
 ```
 
 실행 후 접속:
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080/api
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 
@@ -377,11 +385,11 @@ npm run dev
 | `SPRING_JPA_HIBERNATE_DDL_AUTO` | `update` | DDL 전략 |
 | `SERVER_PORT` | `8080` | 서버 포트 |
 
-### review-board (후기 서비스, ISBN 조회)
+### Backend (선택 - ISBN 조회)
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
-| `NL_CERT_KEY` | *(없음)* | 국립중앙도서관 Open API 인증키. 설정 시 ISBN 책 조회 시 1순위로 사용. [인증키 신청](https://www.nl.go.kr) → 회원가입 → 신청참여 → 연계API → 인증키 신청/관리 |
+| `NL_CERT_KEY` | *(없음)* | 국립중앙도서관 Open API 인증키. 설정 시 후기 작성 시 ISBN 책 조회 1순위로 사용. [인증키 신청](https://www.nl.go.kr) → 회원가입 → 신청참여 → 연계API → 인증키 신청/관리 |
 
 ### Frontend (개발 모드)
 
@@ -404,7 +412,7 @@ npm run dev
 
 - [ ] **JWT 인증** - Spring Security + JWT 토큰 기반 인증/인가
 - [ ] **이미지 업로드** - S3 또는 로컬 파일 시스템 연동
-- [ ] **댓글 시스템** - 게시글 댓글/대댓글 기능
+- [x] **댓글 시스템** - 게시글 댓글 (작성자·비밀번호·수정/삭제)
 - [ ] **조회수 고도화** - Redis 기반 중복 조회 방지
 - [ ] **전문 검색** - Elasticsearch 연동
 - [ ] **CI/CD** - GitHub Actions 자동 빌드/배포 파이프라인
